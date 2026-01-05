@@ -1,13 +1,15 @@
 <script setup>
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
+import { ProjectService } from "../services/project/project.service";
+ProjectService
 
 const props = defineProps({
     errors: {
         type: Object,
         default: () => ({})
     },
-    ownerId: {
-        type: Number,
+    project: {
+        type: Object,
         required: true
     }
 });
@@ -15,10 +17,22 @@ const props = defineProps({
 const emit = defineEmits(["submit"]);
 
 const form = reactive({
-    name: "",
-    description: "",
-    isPublic: false,
+    name: props.project.name,
+    description: props.project.description,
+    isPublic: props.project.isPublic,
 });
+
+watch(
+    () => props.project,
+    (newProject) => {
+        if (!newProject) return;
+
+        form.name = newProject.name ?? "";
+        form.description = newProject.description ?? "";
+        form.isPublic = newProject.isPublic ?? false;
+    },
+    { immediate: true }
+);
 
 </script>
 
@@ -59,7 +73,7 @@ const form = reactive({
         </div>
 
         <button type="submit" class="w-full rounded-xl bg-blue-600 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Salvar
+            Atualizar
         </button>
     </form>
 </template>

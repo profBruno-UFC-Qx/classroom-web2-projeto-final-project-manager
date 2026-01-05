@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import api from "../../services/axios.js";
+import { ProjectService } from "../../services/project/project.service.js";
 import ProjetoForm from "../../components/ProjetoForm.vue";
 import Container from "../../components/Container.vue";
 
@@ -24,7 +24,7 @@ async function handleSubmit(payload) {
     errors.value = {};
     
     try {
-        await api.post("/projects", payload);
+        await ProjectService.create(payload);
         router.push("/projects/listar");
     } catch (error) {
         if (error.response && error.response.status === 422) {

@@ -1,35 +1,33 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
-import api from "../../services/axios.js";
+import { useRouter, useRoute } from "vue-router";
 import SprintForm from "../../components/SprintForm.vue";
 import Container from "../../components/Container.vue";
+import { SprintService } from "../../services/sprint/sprint.service.js"
 
 const props = defineProps({
-  user: { type: Object, required: true },
-  projectId: { type: [String, Number], required: true },
+  user: { 
+    type: Object, 
+    required: true 
+  }
 });
 
+const route = useRoute();
 const router = useRouter();
 const errors = ref({});
 
+const projectId = route.params.projectId;
+
 function goBack() {
-  router.push(`/sprint/listar/${props.projectId}`);
+  router.push(`/sprint/listar/${projectId}`);
 }
 
 async function handleSubmit(payload) {
   errors.value = {};
 
   try {
-    // garante que o sprint vai associado ao projeto
-    const body = {
-      ...payload,
-      projectId: Number(props.projectId),
-      ownerId: 1, // se seu form já manda ownerId, pode remover daqui
-    };
-
-    await api.post("/sprints", body);
-    router.push(`/sprint/listar/${props.projectId}`);
+    await SprintService.create(payload);
+    router.push(`/sprint/listar/${projectId}`);
   } catch (error) {
     if (error.response && error.response.status === 422) {
       errors.value = error.response.data.errors;
@@ -52,6 +50,6 @@ async function handleSubmit(payload) {
       </button>
     </div>
 
-    <SprintForm @submit="handleSubmit" :errors="errors" :ownerId="1" :projectId="Number(projectId)" />
+    <SprintForm @submit="handleSubmit" :errors="errors" :ownerId="1" :projectId="projectId" />
   </Container>
 </template>

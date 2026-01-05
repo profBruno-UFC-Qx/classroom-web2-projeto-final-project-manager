@@ -1,12 +1,19 @@
 <script setup>
 
+const props = defineProps({
+    project: {
+        type: Object,
+        required: true
+    }
+});
+
 </script>
 
 <template>
     <div class="max-w-sm p-5 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Titulo do Projeto</h5>
-        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Descrição do projeto. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla turpis risus, tincidunt vulputate egestas eget, accumsan volutpat augue. Sed sagittis ullamcorper placerat. Donec luctus eget.</p>
-        <router-link :to="{ name: 'Sprint-listar', params: { projectId: 12 } }" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ props.project.name }}</h5>
+        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.project.description }}</p>
+        <router-link :to="{ name: 'Sprint-listar', params: { projectId: props.project.id } }" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
             Ver Sprints
             <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>

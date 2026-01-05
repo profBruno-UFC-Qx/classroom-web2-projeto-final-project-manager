@@ -1,6 +1,13 @@
 <script setup>
 import Container from '../components/Container.vue';
 import ProjetoCard from '../components/ProjetoCard.vue';
+
+const props = defineProps({
+    projects: {
+        type: Array,
+        required: true
+    }
+});
 </script>
 
 <template>
@@ -9,7 +16,7 @@ import ProjetoCard from '../components/ProjetoCard.vue';
             <p class="text-4xl font-bold text-black">Projetos em andamento</p>
         </div>
         <div class="flex flex-wrap gap-5">
-            <ProjetoCard />
+            <ProjetoCard v-for="project in props.projects" :key="project.id" :project="project" />
         </div>
     </Container>
 </template>

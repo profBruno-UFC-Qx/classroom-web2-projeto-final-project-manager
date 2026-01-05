@@ -6,37 +6,31 @@ import TaskForm from "../../components/TaskForm.vue";
 import Container from "../../components/Container.vue";
 
 const props = defineProps({
-  user: { type: Object, required: true },
-  sprintId: { type: [String, Number], required: true },
+  user: { 
+    type: Object, 
+    required: true 
+  },
+  sprint: { 
+    type: Object, 
+    required: true 
+  },
 });
 
 const router = useRouter();
+
 const errors = ref({});
 
-function goBack() {
-  router.push(`/tarefa/listar/${props.sprintId}`);
+function goBack(id) {
+  router.push(`/tarefa/listar/${props.sprint.id}`);
 }
 
-async function handleSubmit(payload) {
-  errors.value = {};
+// async function handleSubmit(payload) {
+//   errors.value = {};
 
-  try {
-    const body = {
-      ...payload,
-      sprintId: Number(props.sprintId),
-      ownerId: 1,
-    };
-
-    await api.post("/tasks", body);
-    router.push(`/tarefa/listar/${props.sprintId}`);
-  } catch (error) {
-    if (error.response && error.response.status === 422) {
-      errors.value = error.response.data.errors;
-    } else {
-      console.error(error);
-    }
-  }
-}
+//   try {
+//     await api.post("")
+//   }
+// }
 </script>
 
 <template>

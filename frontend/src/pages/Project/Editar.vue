@@ -1,18 +1,42 @@
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import api from "../../services/axios.js";
-import ProjetoForm from "../../components/ProjetoForm.vue";
+import { onMounted, ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { ProjectService } from "../../services/project/project.service.js";
+import ProjetoEditForm from "../../components/ProjetoEditForm.vue";
 import Container from "../../components/Container.vue";
 
 const props = defineProps({
     user: {
         type: Object,
         required: true
-    }
+    },
 });
 
-const router = useRouter(); 
+const router = useRouter();
+const route = useRoute();
+
+function goBack() {
+    router.push("/projects/listar")
+}
+
+const project = ref({
+    id: null,
+    name: "",
+    description: "",
+    isPublic: false,
+});
+
+onMounted(async () => {
+    const id = route.params.id;
+    const data = await ProjectService.getById(id);
+
+    project.value = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        isPublic: data.isPublic,
+    };
+});
 
 const errors = ref({});
 
@@ -20,7 +44,7 @@ async function handleSubmit(payload) {
     errors.value = {};
     
     try {
-        await api.put("/projects/:id", payload);
+        await ProjectService.update(project.value.id, payload);
         router.push("/projects/listar");
     } catch (error) {
         if (error.response && error.response.status === 422) {
@@ -34,9 +58,12 @@ async function handleSubmit(payload) {
 
 <template>
     <Container>
-        <div class="w-full mb-6">
-            <h1 class="text-4xl font-bold text-black">Criar Projeto</h1>
+        <div class="w-full mb-6 flex justify-between">
+            <h1 class="text-4xl font-bold text-black">Editar Projeto</h1>
+            <button @click="goBack" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition">
+                ← Voltar
+            </button>
         </div>
-        <ProjetoForm @submit="handleSubmit" :errors="errors" :ownerId="1" />
+        <ProjetoEditForm @submit="handleSubmit" :errors="errors" :project="project" />
     </Container>
 </template>
