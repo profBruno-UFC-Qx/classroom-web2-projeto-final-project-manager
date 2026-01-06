@@ -12,10 +12,22 @@ import EditarTarefa from '@/pages/Task/Editar.vue'
 import ListarComentario from '@/pages/Comment/Listar.vue'
 import CriarComentario from '@/pages/Comment/Criar.vue'
 import EditarComentario from '@/pages/Comment/Editar.vue'
+import Login from '@/pages/Login.vue'
+import Register from '@/pages/Register.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/login',
+      name: 'Login',
+      component: Login
+    },
+    {
+      path: '/register',
+      name: 'Register',
+      component: Register
+    },
     {
       path: '/',
       name: 'Home',
