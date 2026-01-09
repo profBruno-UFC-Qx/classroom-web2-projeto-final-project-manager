@@ -4,16 +4,16 @@ import { reactive } from "vue";
 const props = defineProps({
   errors: {
     type: Object,
-    default: () => ({}),
-  },
-  projectId: {
-    type: Number,
-    required: true,
+    default: () => ({})
   },
   sprintId: {
     type: Number,
-    default: null,
+    required: true
   },
+  users: {
+    type: Array,
+    default: () => []
+  }
 });
 
 const emit = defineEmits(["submit"]);
@@ -25,7 +25,6 @@ const form = reactive({
   priority: "medium",
   dueDate: "",
   assigneeId: "",
-  projectId: props.projectId,
   sprintId: props.sprintId,
 });
 </script>
@@ -46,7 +45,7 @@ const form = reactive({
     </div>
 
     <div class="mb-3">
-      <label for="description" class="block text-sm font-medium text-gray-700">Descricao</label>
+      <label for="description" class="block text-sm font-medium text-gray-700">Descrição</label>
       <textarea
         id="description"
         v-model="form.description"
@@ -101,17 +100,30 @@ const form = reactive({
     </div>
 
     <div class="mb-3">
-      <label for="assigneeId" class="block text-sm font-medium text-gray-700">Responsavel (ID)</label>
-      <input
+      <label for="assigneeId" class="block text-sm font-medium text-gray-700">
+        Responsável
+      </label>
+
+      <select
         id="assigneeId"
         v-model="form.assigneeId"
-        type="number"
-        min="1"
-        name="assigneeId"
         class="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
         :class="errors.assigneeId ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'"
-      />
-      <p v-if="errors.assigneeId" class="mt-1 text-sm text-red-500">{{ errors.assigneeId }}</p>
+      >
+        <option disabled value="">Selecione um responsável</option>
+
+        <option
+          v-for="user in users"
+          :key="user.id"
+          :value="user.id"
+        >
+          {{ user.name }}
+        </option>
+      </select>
+
+      <p v-if="errors.assigneeId" class="mt-1 text-sm text-red-500">
+        {{ errors.assigneeId }}
+      </p>
     </div>
 
     <button type="submit" class="w-full rounded-xl bg-blue-600 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
