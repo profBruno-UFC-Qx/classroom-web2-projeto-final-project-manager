@@ -1,13 +1,21 @@
 <script setup>
 import Container from '@/components/Container.vue';
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
+import { onMounted, ref } from 'vue';
+import { TaskService } from '../../services/task/task.service';
+import { SprintService } from '../../services/sprint/sprint.service';
 
 const props = defineProps({
     sprintId: {
         type: String,
     }
+});
+
+const tasks = ref([]);
+const sprint = ref(null);
+
+onMounted(async () => {
+    sprint.value = await SprintService.getById(props.sprintId);
+    tasks.value = await TaskService.listBySprint(props.sprintId);
 });
 
 </script>
@@ -16,7 +24,7 @@ const props = defineProps({
     <Container>
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <p class="text-4xl font-bold text-black">Tarefas da Sprint {{ sprintId }}</p> <!-- Na verdade seria sprintd.project_id -->
+                <p class="text-4xl font-bold text-black">Tarefas da Sprint {{ sprintId }}</p>
                 <button>
                     <router-link
                         :to="{ name: 'Tarefa-criar', params: { sprintId: sprintId } }"
@@ -29,11 +37,18 @@ const props = defineProps({
             </div>
             <div>
                 <router-link
-                    :to="{ name: 'Sprint-listar' , params: { projectId: 1 } }"
+                    v-if="sprint?.projectId"
+                    :to="{ name: 'Sprint-listar' , params: { projectId: sprint.projectId } }"
                     class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
                 >
-                    ← Voltar
+                    Voltar
                 </router-link>
+                <span
+                    v-else
+                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
+                >
+                    Voltar
+                </span>
             </div>
         </div>
          <div class="mt-6 overflow-x-auto shadow-md rounded-lg">
@@ -42,21 +57,21 @@ const props = defineProps({
                     <tr>
                         <th class="px-4 py-2 border">Nome da Tarefa</th>
                         <th class="px-4 py-2 border">Status</th>
-                        <th class="px-4 py-2 border">Opções</th>
+                        <th class="px-4 py-2 border">Opcoes</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-4 py-2 border">Criação de SPA</td>
-                        <td class="px-4 py-2 border">Amarelo</td>
+                    <tr v-for="task in tasks" :key="task.id" class="hover:bg-gray-50 transition">
+                        <td class="px-4 py-2 border">{{ task.title }}</td>
+                        <td class="px-4 py-2 border">{{ task.status }}</td>
                         <td class="px-4 py-2 border">
                             <div class="flex flex-wrap justify-center gap-3">
                                 <router-link
-                                    :to="{ name: 'Comentario-listar', params: { tarefaId: 1 } }"
+                                    :to="{ name: 'Comentario-listar', params: { tarefaId: task.id } }"
                                     class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-full text-sm shadow-sm transition"
                                 >
                                     <i class="fa-solid fa-eye"></i>
-                                    <span>Ver Comentários</span>
+                                    <span>Ver Comentarios</span>
                                 </router-link>
 
                                 <button 

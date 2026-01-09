@@ -124,6 +124,51 @@ export class TaskService {
     return this.taskRepo.find({ where: { projectId } });
   }
 
+  async listBySprint(
+    sprintId: number,
+    currentUser?: AuthUser
+  ): Promise<Task[]> {
+    const sprint = await this.sprintRepo.findOneBy({ id: sprintId });
+    if (!sprint) {
+      throw new NotFoundError("Sprint not found");
+    }
+
+    const project = await this.projectRepo.findOneBy({ id: sprint.projectId });
+    if (!project) {
+      throw new NotFoundError("Project not found");
+    }
+
+    const baseWhere = { projectId: project.id, sprintId };
+
+    if (project.isPublic) {
+      return this.taskRepo.find({ where: baseWhere });
+    }
+
+    if (!currentUser) {
+      throw new ForbiddenError("Authentication required");
+    }
+
+    if (isAdmin(currentUser) || project.ownerId === currentUser.id) {
+      return this.taskRepo.find({ where: baseWhere });
+    }
+
+    const membership = await this.memberRepo.findOneBy({
+      projectId: project.id,
+      userId: currentUser.id,
+    });
+    if (!membership) {
+      throw new ForbiddenError("You do not have access to this project");
+    }
+
+    if (membership.role === ProjectRole.Member) {
+      return this.taskRepo.find({
+        where: { ...baseWhere, assigneeId: currentUser.id },
+      });
+    }
+
+    return this.taskRepo.find({ where: baseWhere });
+  }
+
   async getById(id: number, currentUser?: AuthUser): Promise<Task> {
     const task = await this.taskRepo.findOneBy({ id });
     if (!task) {

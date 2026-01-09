@@ -1,36 +1,53 @@
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import api from "../../services/axios.js";
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import TaskForm from "../../components/TaskForm.vue";
 import Container from "../../components/Container.vue";
+import { TaskService } from "../../services/task/task.service";
+import { SprintService } from "../../services/sprint/sprint.service";
 
-const props = defineProps({
-  user: { 
-    type: Object, 
-    required: true 
-  },
-  sprint: { 
-    type: Object, 
-    required: true 
-  },
-});
-
+const route = useRoute();
 const router = useRouter();
 
+const sprintId = route.params.sprintId;
+const sprint = ref(null);
 const errors = ref({});
+const formError = ref("");
 
-function goBack(id) {
-  router.push(`/tarefa/listar/${props.sprint.id}`);
+onMounted(async () => {
+  try {
+    sprint.value = await SprintService.getById(sprintId);
+  } catch (error) {
+    formError.value = "Nao foi possivel carregar a sprint.";
+  }
+});
+
+function goBack() {
+  router.push(`/tarefa/listar/${sprintId}`);
 }
 
-// async function handleSubmit(payload) {
-//   errors.value = {};
+async function handleSubmit(payload) {
+  errors.value = {};
+  formError.value = "";
 
-//   try {
-//     await api.post("")
-//   }
-// }
+  const data = {
+    title: payload.title,
+    description: payload.description || null,
+    status: payload.status,
+    priority: payload.priority,
+    dueDate: payload.dueDate || null,
+    projectId: sprint.value?.projectId,
+    sprintId: sprint.value?.id,
+    assigneeId: payload.assigneeId ? Number(payload.assigneeId) : null,
+  };
+
+  try {
+    await TaskService.create(data);
+    router.push(`/tarefa/listar/${sprintId}`);
+  } catch (error) {
+    formError.value = "Nao foi possivel criar a tarefa.";
+  }
+}
 </script>
 
 <template>
@@ -41,10 +58,17 @@ function goBack(id) {
         @click="goBack"
         class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
       >
-        ← Voltar
+        Voltar
       </button>
     </div>
 
-    <TaskForm @submit="handleSubmit" :errors="errors" :ownerId="1" :sprintId="Number(sprintId)" />
+    <p v-if="formError" class="mb-3 text-sm text-red-600">{{ formError }}</p>
+    <TaskForm
+      v-if="sprint?.projectId"
+      @submit="handleSubmit"
+      :errors="errors"
+      :projectId="sprint.projectId"
+      :sprintId="Number(sprintId)"
+    />
   </Container>
 </template>
