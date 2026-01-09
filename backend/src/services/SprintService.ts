@@ -1,6 +1,8 @@
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { Sprint } from "../models/Sprint";
 import { Project } from "../models/Project";
+import { Task } from "../models/Task";
+import { Comment } from "../models/Comment";
 import { ProjectMember, ProjectRole } from "../models/ProjectMember";
 import {
   AuthUser,
@@ -147,16 +149,37 @@ export class SprintService {
 
     return this.sprintRepo.save(sprint);
   }
-
   async deleteSprint(id: number, currentUser?: AuthUser): Promise<void> {
-    assertAuthenticated(currentUser);
+  assertAuthenticated(currentUser);
 
-    const sprint = await this.sprintRepo.findOneBy({ id });
-    if (!sprint) {
-      throw new NotFoundError("Sprint not found");
-    }
+  const sprint = await this.sprintRepo.findOneBy({ id });
+  if (!sprint) {
+    throw new NotFoundError("Sprint not found");
+  }
 
-    await this.assertCanManageProject(sprint.projectId, currentUser);
-    await this.sprintRepo.remove(sprint);
+  await this.assertCanManageProject(sprint.projectId, currentUser);
+
+  await this.sprintRepo.manager.transaction(async (trx) => {
+      const taskRepo = trx.getRepository(Task);
+      const commentRepo = trx.getRepository(Comment);
+      const sprintRepo = trx.getRepository(Sprint);
+
+      const taskIds = await taskRepo.find({
+        select: { id: true },
+        where: { sprintId: sprint.id },
+      });
+
+      const taskIdList = taskIds.map(task => task.id);
+
+      if (taskIdList.length) {
+        await commentRepo.delete({
+          taskId: In(taskIdList),
+        });
+      }
+
+      await taskRepo.delete({ sprintId: sprint.id });
+      await sprintRepo.delete({ id: sprint.id });
+    });
   }
 }
+

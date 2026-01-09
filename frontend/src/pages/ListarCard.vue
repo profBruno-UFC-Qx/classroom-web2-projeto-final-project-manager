@@ -12,11 +12,23 @@ const props = defineProps({
 
 <template>
     <Container>
-        <div>
-            <p class="text-4xl font-bold text-black">Projetos em andamento</p>
-        </div>
-        <div class="flex flex-wrap gap-5">
-            <ProjetoCard v-for="project in props.projects" :key="project.id" :project="project" />
+        <div class="flex flex-col gap-5">
+            <div>
+                <div class="flex mb-2.5">
+                    <p class="text-4xl font-bold text-black">Projetos Públicos:</p>
+                </div>
+                <div class="flex flex-wrap gap-5">
+                    <ProjetoCard v-for="project in props.projects" :key="project.id" :project="project" />
+                </div>
+            </div>
+            <div>
+                <div class="flex mb-2.5">
+                    <p class="text-4xl font-bold text-black">Projetos Vínculados:</p>
+                </div>
+                <div class="flex flex-wrap gap-5">
+                    <ProjetoCard v-for="project in props.projects" :key="project.id" :project="project" />
+                </div>
+            </div>
         </div>
     </Container>
 </template>

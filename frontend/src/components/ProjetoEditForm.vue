@@ -1,7 +1,5 @@
 <script setup>
 import { reactive, watch } from "vue";
-import { ProjectService } from "../services/project/project.service";
-ProjectService
 
 const props = defineProps({
     errors: {

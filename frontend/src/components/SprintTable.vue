@@ -16,8 +16,6 @@ const props = defineProps({
     }
 });
 
-const projectId = route.params.projectId
-
 async function handleDelete(id) {
 
   const confirmed = confirm('Deseja realmente excluir este projeto?')
@@ -25,12 +23,17 @@ async function handleDelete(id) {
 
   try {
     const res = await SprintService.delete(id)
+    console.log('Resposta da API:', res)
 
-    // router.replace({ name: 'Projects-listar' })
+    //router.replace({ name: 'Projects-listar' }) todo: mudar para futuramente emitir um estado e atualizar
+    router.go(0)
+
   } catch (error) {
     console.error('Erro no delete:', error)
   }
 }
+
+const projectId = route.params.projectId
 
 function goBack() {
     router.push("/")
@@ -83,14 +86,16 @@ function goBack() {
                                     <span>Ver Tarefas</span>
                                 </router-link>
 
-                                <button 
-                                    class="flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-sm transition"
-                                    title="Editar"
-                                >
-                                    <i class="fa-solid fa-pencil"></i>
-                                </button>
+                                <router-link
+                                        :to="{ name: 'Sprint-editar', params: { sprintId: sprint.id } }"
+                                        class="flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-sm transition"
+                                        title="Editar"
+                                    >
+                                        <i class="fa-solid fa-pencil"></i>
+                                </router-link>
 
-                                <button 
+                                <button
+                                    @click="handleDelete(sprint.id)" 
                                     class="flex items-center justify-center w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-sm transition"
                                     title="Excluir"
                                 >
