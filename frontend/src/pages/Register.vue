@@ -14,7 +14,6 @@ const auth = useAuthStore()
 
 async function handleSubmit() {
   error.value = ''
-  loading.value = true
 
   try {
     await api.post('/users/register', {
