@@ -1,0 +1,148 @@
+@baseUrl = http://localhost:8080
+@adminId = 1
+@adminRole = admin
+@managerId = 2
+@memberId = 3
+
+###
+# Health check
+GET {{baseUrl}}/
+
+###
+# Register public user (default role: member)
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+  "name": "Admin User",
+  "email": "admin@example.com"
+}
+
+###
+# List users (admin only)
+GET {{baseUrl}}/users
+X-User-Id: {{adminId}}
+X-User-Role: {{adminRole}}
+
+###
+# Get user by id (admin or self)
+GET {{baseUrl}}/users/1
+X-User-Id: {{adminId}}
+X-User-Role: {{adminRole}}
+
+###
+# Update user (admin or self)
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+X-User-Id: {{adminId}}
+X-User-Role: {{adminRole}}
+
+{
+  "name": "Admin User Updated"
+}
+
+###
+# Create project (admin or manager)
+POST {{baseUrl}}/projects
+Content-Type: application/json
+X-User-Id: {{adminId}}
+
+{
+  "name": "Projeto 1",
+  "description": "Projeto publico",
+  "isPublic": true
+}
+
+###
+# List projects (public + accessible)
+GET {{baseUrl}}/projects
+
+###
+# Get project by id
+GET {{baseUrl}}/projects/1
+
+###
+# Update project (owner or admin)
+PUT {{baseUrl}}/projects/1
+Content-Type: application/json
+X-User-Id: {{adminId}}
+
+{
+  "description": "Descricao atualizada"
+}
+
+###
+# Create sprint (manager/admin + owner)
+POST {{baseUrl}}/sprints
+Content-Type: application/json
+X-User-Id: {{adminId}}
+
+{
+  "name": "Sprint 1",
+  "projectId": 1,
+  "startDate": "2025-01-01",
+  "endDate": "2025-01-15"
+}
+
+###
+# List sprints by project
+GET {{baseUrl}}/sprints?projectId=1
+
+###
+# Create task (manager/admin + owner)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+X-User-Id: {{adminId}}
+
+{
+  "title": "Tarefa 1",
+  "description": "Primeira tarefa",
+  "projectId": 1,
+  "sprintId": 1,
+  "assigneeId": {{memberId}}
+}
+
+###
+# List tasks by project
+GET {{baseUrl}}/tasks?projectId=1
+
+###
+# Update task status as member (only status allowed)
+PUT {{baseUrl}}/tasks/1
+Content-Type: application/json
+X-User-Id: {{memberId}}
+
+{
+  "status": "in_progress"
+}
+
+###
+# Create comment (logged users)
+POST {{baseUrl}}/comments
+Content-Type: application/json
+X-User-Id: {{memberId}}
+
+{
+  "taskId": 1,
+  "content": "Comentario inicial"
+}
+
+###
+# List comments by task
+GET {{baseUrl}}/comments?taskId=1
+
+###
+# Update comment (author or admin)
+PUT {{baseUrl}}/comments/1
+Content-Type: application/json
+X-User-Id: {{memberId}}
+
+{
+  "content": "Comentario atualizado"
+}
+
+###
+# Delete comment (author or admin)
+DELETE {{baseUrl}}/comments/1
+X-User-Id: {{memberId}}
+
