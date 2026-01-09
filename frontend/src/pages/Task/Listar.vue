@@ -1,6 +1,7 @@
 <script setup>
 import Container from '@/components/Container.vue';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { TaskService } from '../../services/task/task.service';
 import { SprintService } from '../../services/sprint/sprint.service';
 
@@ -10,11 +11,31 @@ const props = defineProps({
     }
 });
 
+const route = useRoute();
+
+const sprintId = Number(route.params.sprintId);
+
+const sprint = ref({
+    name: "",
+    startDate: "",
+    endDate: "",
+    projectId: ""
+});
+
 const tasks = ref([]);
-const sprint = ref(null);
 
 onMounted(async () => {
-    sprint.value = await SprintService.getById(props.sprintId);
+    const id = route.params.sprintId;
+    const data = await SprintService.getById(props.sprintId);
+
+    sprint.value = {
+        id: data.id,
+        name: data.name,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        projectId: data.projectId
+    };
+
     tasks.value = await TaskService.listBySprint(props.sprintId);
 });
 
@@ -37,18 +58,11 @@ onMounted(async () => {
             </div>
             <div>
                 <router-link
-                    v-if="sprint?.projectId"
-                    :to="{ name: 'Sprint-listar' , params: { projectId: sprint.projectId } }"
+                    :to="{ name: 'Sprint-listar' , params: { projectId: Number(sprint.projectId) } }"
                     class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
                 >
-                    Voltar
+                    ← Voltar
                 </router-link>
-                <span
-                    v-else
-                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
-                >
-                    Voltar
-                </span>
             </div>
         </div>
          <div class="mt-6 overflow-x-auto shadow-md rounded-lg">
@@ -57,13 +71,15 @@ onMounted(async () => {
                     <tr>
                         <th class="px-4 py-2 border">Nome da Tarefa</th>
                         <th class="px-4 py-2 border">Status</th>
-                        <th class="px-4 py-2 border">Opcoes</th>
+                        <th class="px-4 py-2 border">Responsável</th>
+                        <th class="px-4 py-2 border">Opções</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="task in tasks" :key="task.id" class="hover:bg-gray-50 transition">
                         <td class="px-4 py-2 border">{{ task.title }}</td>
                         <td class="px-4 py-2 border">{{ task.status }}</td>
+                        <td class="px-4 py-2 border">{{ task.assigneedId }}</td>
                         <td class="px-4 py-2 border">
                             <div class="flex flex-wrap justify-center gap-3">
                                 <router-link

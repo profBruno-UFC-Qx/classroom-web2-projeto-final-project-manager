@@ -4,48 +4,29 @@ import { useRoute, useRouter } from "vue-router";
 import TaskForm from "../../components/TaskForm.vue";
 import Container from "../../components/Container.vue";
 import { TaskService } from "../../services/task/task.service";
-import { SprintService } from "../../services/sprint/sprint.service";
 
 const route = useRoute();
 const router = useRouter();
 
 const sprintId = route.params.sprintId;
-const sprint = ref(null);
-const errors = ref({});
-const formError = ref("");
 
-onMounted(async () => {
-  try {
-    sprint.value = await SprintService.getById(sprintId);
-  } catch (error) {
-    formError.value = "Nao foi possivel carregar a sprint.";
-  }
-});
+const errors = ref({});
 
 function goBack() {
   router.push(`/tarefa/listar/${sprintId}`);
 }
-
 async function handleSubmit(payload) {
   errors.value = {};
-  formError.value = "";
-
-  const data = {
-    title: payload.title,
-    description: payload.description || null,
-    status: payload.status,
-    priority: payload.priority,
-    dueDate: payload.dueDate || null,
-    projectId: sprint.value?.projectId,
-    sprintId: sprint.value?.id,
-    assigneeId: payload.assigneeId ? Number(payload.assigneeId) : null,
-  };
 
   try {
-    await TaskService.create(data);
+    await TaskService.create(payload);
     router.push(`/tarefa/listar/${sprintId}`);
   } catch (error) {
-    formError.value = "Nao foi possivel criar a tarefa.";
+      if (error.response && error.response.status === 422) {
+          errors.value = error.response.data.errors;
+      } else {
+          console.error(error);
+      }
   }
 }
 </script>
@@ -58,17 +39,11 @@ async function handleSubmit(payload) {
         @click="goBack"
         class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
       >
-        Voltar
+        ← Voltar
       </button>
     </div>
 
     <p v-if="formError" class="mb-3 text-sm text-red-600">{{ formError }}</p>
-    <TaskForm
-      v-if="sprint?.projectId"
-      @submit="handleSubmit"
-      :errors="errors"
-      :projectId="sprint.projectId"
-      :sprintId="Number(sprintId)"
-    />
+      <TaskForm @submit="handleSubmit" :errors="errors" :sprintId="Number(sprintId)" />
   </Container>
 </template>
