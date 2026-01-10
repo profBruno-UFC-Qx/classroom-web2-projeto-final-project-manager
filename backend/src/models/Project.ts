@@ -9,7 +9,6 @@ import {
   JoinColumn,
 } from "typeorm";
 import { User } from "./User";
-import { Task } from "./Task";
 import { Sprint } from "./Sprint";
 import { ProjectMember } from "./ProjectMember";
 
@@ -36,9 +35,6 @@ export class Project {
 
   @OneToMany(() => Sprint, (sprint) => sprint.project)
   sprints!: Sprint[];
-
-  @OneToMany(() => Task, (task) => task.project)
-  tasks!: Task[];
 
   @OneToMany(() => ProjectMember, (membership) => membership.project)
   members!: ProjectMember[];

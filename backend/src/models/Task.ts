@@ -8,7 +8,6 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from "typeorm";
-import { Project } from "./Project";
 import { Sprint } from "./Sprint";
 import { User } from "./User";
 import { Comment } from "./Comment";
@@ -33,19 +32,12 @@ export class Task {
   @Column({ type: "date", nullable: true })
   dueDate?: string | null;
 
-  @ManyToOne(() => Project, (project) => project.tasks, { nullable: false })
-  @JoinColumn({ name: "projectId" })
-  project!: Project;
+  @ManyToOne(() => Sprint, (sprint) => sprint.tasks, { nullable: false })
+  @JoinColumn({ name: "sprintId" })
+  sprint!: Sprint;
 
   @Column({ type: "integer" })
-  projectId!: number;
-
-  @ManyToOne(() => Sprint, (sprint) => sprint.tasks, { nullable: true })
-  @JoinColumn({ name: "sprintId" })
-  sprint?: Sprint | null;
-
-  @Column({ type: "integer", nullable: true })
-  sprintId?: number | null;
+  sprintId!: number;
 
   @ManyToOne(() => User, (user) => user.tasks, { nullable: true })
   @JoinColumn({ name: "assigneeId" })

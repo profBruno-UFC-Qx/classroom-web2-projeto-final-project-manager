@@ -6,11 +6,6 @@ export const TaskService = {
     return response.data;
   },
 
-  async listByProject(projectId) {
-    const response = await api.get("/tasks", { params: { projectId } });
-    return response.data;
-  },
-
   async getById(id) {
     const response = await api.get(`/tasks/${id}`);
     return response.data;

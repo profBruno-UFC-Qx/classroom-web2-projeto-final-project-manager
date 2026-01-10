@@ -6,6 +6,7 @@ import { User } from "../models/User";
 import { ProjectMember, ProjectRole } from "../models/ProjectMember";
 import {
   AuthUser,
+  BadRequestError,
   ForbiddenError,
   NotFoundError,
   assertAuthenticated,
@@ -18,8 +19,7 @@ export type CreateTaskInput = {
   status?: string;
   priority?: string;
   dueDate?: string | null;
-  projectId: number;
-  sprintId?: number | null;
+  sprintId: number;
   assigneeId?: number | null;
 };
 
@@ -29,7 +29,7 @@ export type UpdateTaskInput = {
   status?: string;
   priority?: string;
   dueDate?: string | null;
-  sprintId?: number | null;
+  sprintId?: number;
   assigneeId?: number | null;
 };
 
@@ -69,65 +69,7 @@ export class TaskService {
     return project;
   }
 
-  private async validateSprint(projectId: number, sprintId: number) {
-    const sprint = await this.sprintRepo.findOneBy({ id: sprintId });
-    if (!sprint) {
-      throw new NotFoundError("Sprint not found");
-    }
-    if (sprint.projectId !== projectId) {
-      throw new ForbiddenError("Sprint does not belong to the project");
-    }
-  }
-
-  private async validateAssignee(assigneeId: number) {
-    const assignee = await this.userRepo.findOneBy({ id: assigneeId });
-    if (!assignee) {
-      throw new NotFoundError("Assignee user not found");
-    }
-  }
-
-  async listByProject(
-    projectId: number,
-    currentUser?: AuthUser
-  ): Promise<Task[]> {
-    const project = await this.projectRepo.findOneBy({ id: projectId });
-    if (!project) {
-      throw new NotFoundError("Project not found");
-    }
-
-    if (project.isPublic) {
-      return this.taskRepo.find({ where: { projectId } });
-    }
-
-    if (!currentUser) {
-      throw new ForbiddenError("Authentication required");
-    }
-
-    if (isAdmin(currentUser) || project.ownerId === currentUser.id) {
-      return this.taskRepo.find({ where: { projectId } });
-    }
-
-    const membership = await this.memberRepo.findOneBy({
-      projectId,
-      userId: currentUser.id,
-    });
-    if (!membership) {
-      throw new ForbiddenError("You do not have access to this project");
-    }
-
-    if (membership.role === ProjectRole.Member) {
-      return this.taskRepo.find({
-        where: { projectId, assigneeId: currentUser.id },
-      });
-    }
-
-    return this.taskRepo.find({ where: { projectId } });
-  }
-
-  async listBySprint(
-    sprintId: number,
-    currentUser?: AuthUser
-  ): Promise<Task[]> {
+  private async getProjectForSprint(sprintId: number) {
     const sprint = await this.sprintRepo.findOneBy({ id: sprintId });
     if (!sprint) {
       throw new NotFoundError("Sprint not found");
@@ -138,7 +80,31 @@ export class TaskService {
       throw new NotFoundError("Project not found");
     }
 
-    const baseWhere = { projectId: project.id, sprintId };
+    return { sprint, project };
+  }
+
+  private async getProjectForTask(task: Task) {
+    if (!task.sprintId) {
+      throw new BadRequestError("Task has no sprint");
+    }
+
+    const { project } = await this.getProjectForSprint(task.sprintId);
+    return project;
+  }
+
+  private async validateAssignee(assigneeId: number) {
+    const assignee = await this.userRepo.findOneBy({ id: assigneeId });
+    if (!assignee) {
+      throw new NotFoundError("Assignee user not found");
+    }
+  }
+
+  async listBySprint(
+    sprintId: number,
+    currentUser?: AuthUser
+  ): Promise<Task[]> {
+    const { project } = await this.getProjectForSprint(sprintId);
+    const baseWhere = { sprintId };
 
     if (project.isPublic) {
       return this.taskRepo.find({ where: baseWhere });
@@ -175,10 +141,7 @@ export class TaskService {
       throw new NotFoundError("Task not found");
     }
 
-    const project = await this.projectRepo.findOneBy({ id: task.projectId });
-    if (!project) {
-      throw new NotFoundError("Project not found");
-    }
+    const project = await this.getProjectForTask(task);
 
     if (project.isPublic) {
       return task;
@@ -213,11 +176,8 @@ export class TaskService {
   ): Promise<Task> {
     assertAuthenticated(currentUser);
 
-    const project = await this.assertCanManageProject(input.projectId, currentUser);
-
-    if (input.sprintId) {
-      await this.validateSprint(project.id, input.sprintId);
-    }
+    const { sprint, project } = await this.getProjectForSprint(input.sprintId);
+    await this.assertCanManageProject(project.id, currentUser);
     if (input.assigneeId) {
       await this.validateAssignee(input.assigneeId);
     }
@@ -228,9 +188,8 @@ export class TaskService {
       status: input.status ?? "todo",
       priority: input.priority ?? "medium",
       dueDate: input.dueDate ?? null,
-      project,
-      projectId: project.id,
-      sprintId: input.sprintId ?? null,
+      sprint,
+      sprintId: sprint.id,
       assigneeId: input.assigneeId ?? null,
     });
 
@@ -249,8 +208,9 @@ export class TaskService {
       throw new NotFoundError("Task not found");
     }
 
+    const currentProject = await this.getProjectForTask(task);
     const membership = await this.memberRepo.findOneBy({
-      projectId: task.projectId,
+      projectId: currentProject.id,
       userId: currentUser.id,
     });
 
@@ -272,10 +232,13 @@ export class TaskService {
         throw new ForbiddenError("Members can only update task status");
       }
     } else {
-      await this.assertCanManageProject(task.projectId, currentUser);
+      await this.assertCanManageProject(currentProject.id, currentUser);
 
-      if (input.sprintId !== undefined && input.sprintId !== null) {
-        await this.validateSprint(task.projectId, input.sprintId);
+      if (input.sprintId !== undefined) {
+        const { project: nextProject } = await this.getProjectForSprint(input.sprintId);
+        if (nextProject.id !== currentProject.id) {
+          throw new ForbiddenError("Sprint does not belong to the project");
+        }
       }
       if (input.assigneeId !== undefined && input.assigneeId !== null) {
         await this.validateAssignee(input.assigneeId);
@@ -301,7 +264,8 @@ export class TaskService {
       throw new NotFoundError("Task not found");
     }
 
-    await this.assertCanManageProject(task.projectId, currentUser);
+    const project = await this.getProjectForTask(task);
+    await this.assertCanManageProject(project.id, currentUser);
     await this.taskRepo.remove(task);
   }
 }

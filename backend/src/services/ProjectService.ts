@@ -178,17 +178,28 @@ export class ProjectService {
       const commentRepo = trx.getRepository(Comment);
       const memberRepo = trx.getRepository(ProjectMember);
 
-      const taskIds = await taskRepo.find({
+      const sprints = await sprintRepo.find({
         select: { id: true },
         where: { projectId: project.id },
       });
-      const taskIdList = taskIds.map((task) => task.id);
+      const sprintIds = sprints.map((sprint) => sprint.id);
+
+      const taskIdList = sprintIds.length
+        ? (
+            await taskRepo.find({
+              select: { id: true },
+              where: { sprintId: In(sprintIds) },
+            })
+          ).map((task) => task.id)
+        : [];
 
       if (taskIdList.length) {
         await commentRepo.delete({ taskId: In(taskIdList) });
       }
 
-      await taskRepo.delete({ projectId: project.id });
+      if (sprintIds.length) {
+        await taskRepo.delete({ sprintId: In(sprintIds) });
+      }
       await sprintRepo.delete({ projectId: project.id });
       await memberRepo.delete({ projectId: project.id });
       await trx.getRepository(Project).delete({ id: project.id });

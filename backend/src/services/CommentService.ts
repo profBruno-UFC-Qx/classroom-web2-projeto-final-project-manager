@@ -2,6 +2,7 @@ import { Repository } from "typeorm";
 import { Comment } from "../models/Comment";
 import { Task } from "../models/Task";
 import { Project } from "../models/Project";
+import { Sprint } from "../models/Sprint";
 import { ProjectMember } from "../models/ProjectMember";
 import {
   AuthUser,
@@ -25,11 +26,21 @@ export class CommentService {
     private commentRepo: Repository<Comment>,
     private taskRepo: Repository<Task>,
     private projectRepo: Repository<Project>,
+    private sprintRepo: Repository<Sprint>,
     private memberRepo: Repository<ProjectMember>
   ) {}
 
   private async assertCanViewTask(task: Task, currentUser?: AuthUser) {
-    const project = await this.projectRepo.findOneBy({ id: task.projectId });
+    if (!task.sprintId) {
+      throw new NotFoundError("Sprint not found");
+    }
+
+    const sprint = await this.sprintRepo.findOneBy({ id: task.sprintId });
+    if (!sprint) {
+      throw new NotFoundError("Sprint not found");
+    }
+
+    const project = await this.projectRepo.findOneBy({ id: sprint.projectId });
     if (!project) {
       throw new NotFoundError("Project not found");
     }

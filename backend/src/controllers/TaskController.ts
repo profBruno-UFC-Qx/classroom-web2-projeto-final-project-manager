@@ -8,23 +8,13 @@ export class TaskController {
   list = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const sprintId = Number(req.query.sprintId);
-      if (Number.isFinite(sprintId)) {
-        const tasks = await this.taskService.listBySprint(
-          sprintId,
-          getAuthUser(req)
-        );
-        res.json(tasks);
+      if (!Number.isFinite(sprintId)) {
+        res.status(400).json({ message: "sprintId is required" });
         return;
       }
 
-      const projectId = Number(req.query.projectId);
-      if (!Number.isFinite(projectId)) {
-        res.status(400).json({ message: "projectId or sprintId is required" });
-        return;
-      }
-
-      const tasks = await this.taskService.listByProject(
-        projectId,
+      const tasks = await this.taskService.listBySprint(
+        sprintId,
         getAuthUser(req)
       );
       res.json(tasks);

@@ -44,6 +44,7 @@ export const createRouter = (dataSource: DataSource) => {
     dataSource.getRepository(Comment),
     dataSource.getRepository(Task),
     dataSource.getRepository(Project),
+    dataSource.getRepository(Sprint),
     dataSource.getRepository(ProjectMember)
   );
   const authService = new AuthService(dataSource.getRepository(User));
