@@ -32,6 +32,15 @@ export class UserController {
     }
   };
 
+  me = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = await this.userService.getMe(getAuthUser(req));
+      res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = Number(req.params.id);

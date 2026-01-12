@@ -6,6 +6,7 @@ import EditarProjeto from '@/pages/Project/Editar.vue'
 import ListarSprint from '@/pages/Sprint/Listar.vue'
 import CriarSprint from '@/pages/Sprint/Criar.vue'
 import EditarSprint from '@/pages/Sprint/Editar.vue'
+import ListarMembrosProjeto from '@/pages/ProjectMember/Listar.vue'
 import ListarTarefa from '@/pages/Task/Listar.vue'
 import CriarTarefa from '@/pages/Task/Criar.vue'
 import EditarTarefa from '@/pages/Task/Editar.vue'
@@ -53,6 +54,12 @@ const router = createRouter({
       path: '/sprint/listar/:projectId', 
       name: 'Sprint-listar',
       component: ListarSprint,
+      props: true
+    },
+    {
+      path: '/members/listar/:projectId',
+      name: 'Members-listar',
+      component: ListarMembrosProjeto,
       props: true
     },
     {

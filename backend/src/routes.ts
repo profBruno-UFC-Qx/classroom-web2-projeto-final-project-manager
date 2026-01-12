@@ -73,6 +73,7 @@ export const createRouter = (dataSource: DataSource) => {
   router.post("/auth/login", authController.login);
   
   router.post("/auth/logout", authController.logout);
+  router.get("/me", userController.me);
   router.post("/users", userController.create);
   router.get("/users", userController.list);
   router.get("/users/:id", userController.getById);
@@ -93,6 +94,7 @@ export const createRouter = (dataSource: DataSource) => {
   router.delete("/sprints/:id", sprintController.remove);
 
   router.get("/members/:projectId", memberController.listByProject);
+  router.get("/members/:projectId/available", memberController.listAvailableUsers);
   router.post("/members/:projectId", memberController.add);
   router.put("/members/:projectId/:userId", memberController.update);
   router.delete("/members/:projectId/:userId", memberController.delete);

@@ -1,8 +1,14 @@
-import { Repository } from "typeorm";
+import { In, Not, Repository } from "typeorm";
 import { ProjectMember, ProjectRole } from "../models/ProjectMember";
 import { User } from "../models/User";
 import { Project } from "../models/Project";
-import { AuthUser, NotFoundError, ForbiddenError, assertAuthenticated } from "./utils";
+import {
+  AuthUser,
+  NotFoundError,
+  ForbiddenError,
+  assertAuthenticated,
+  isAdmin,
+} from "./utils";
 
 export type CreateProjectMemberInput = {
   userId: number;
@@ -27,14 +33,28 @@ export class ProjectMemberService {
     });
   }
 
+  async listAvailableUsers(projectId: number, currentUser?: AuthUser): Promise<User[]> {
+    assertAuthenticated(currentUser);
+    await this.assertCanManageMembers(projectId, currentUser);
+
+    const memberships = await this.memberRepo.find({
+      select: { userId: true },
+      where: { projectId },
+    });
+    const memberIds = memberships.map((membership) => membership.userId);
+
+    if (!memberIds.length) {
+      return this.userRepo.find();
+    }
+
+    return this.userRepo.find({
+      where: { id: Not(In(memberIds)) },
+    });
+  }
+
   async add(projectId: number, input: CreateProjectMemberInput, currentUser?: AuthUser) {
     assertAuthenticated(currentUser);
-    const project = await this.projectRepo.findOneBy({ id: projectId });
-    if (!project) throw new NotFoundError("Project not found");
-
-    if (project.ownerId !== currentUser.id) {
-      throw new ForbiddenError("Only project owner can add members");
-    }
+    await this.assertCanManageMembers(projectId, currentUser);
 
     const user = await this.userRepo.findOneBy({ id: input.userId });
     if (!user) throw new NotFoundError("User not found");
@@ -50,15 +70,10 @@ export class ProjectMemberService {
 
   async update(projectId: number, userId: number, input: UpdateProjectMemberInput, currentUser?: AuthUser) {
     assertAuthenticated(currentUser);
+    await this.assertCanManageMembers(projectId, currentUser);
 
     const membership = await this.memberRepo.findOneBy({ projectId, userId });
     if (!membership) throw new NotFoundError("Membership not found");
-
-    const project = await this.projectRepo.findOneBy({ id: projectId });
-    if (!project) throw new NotFoundError("Project not found");
-    if (project.ownerId !== currentUser.id) {
-      throw new ForbiddenError("Only project owner can update member role");
-    }
 
     membership.role = input.role;
     return this.memberRepo.save(membership);
@@ -66,17 +81,32 @@ export class ProjectMemberService {
 
   async delete(projectId: number, userId: number, currentUser?: AuthUser) {
     assertAuthenticated(currentUser);
+    await this.assertCanManageMembers(projectId, currentUser);
 
     const membership = await this.memberRepo.findOneBy({ projectId, userId });
     if (!membership) throw new NotFoundError("Membership not found");
 
+    await this.memberRepo.delete({ projectId, userId });
+  }
+
+  private async assertCanManageMembers(
+    projectId: number,
+    currentUser: AuthUser
+  ) {
     const project = await this.projectRepo.findOneBy({ id: projectId });
     if (!project) throw new NotFoundError("Project not found");
 
-    if (project.ownerId !== currentUser.id) {
-      throw new ForbiddenError("Only project owner can remove member");
+    if (isAdmin(currentUser) || project.ownerId === currentUser.id) {
+      return;
     }
 
-    await this.memberRepo.delete({ projectId, userId });
+    const membership = await this.memberRepo.findOneBy({
+      projectId,
+      userId: currentUser.id,
+    });
+
+    if (membership?.role !== ProjectRole.Admin) {
+      throw new ForbiddenError("Only project admin can manage members");
+    }
   }
 }

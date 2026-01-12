@@ -6,6 +6,11 @@ export const ProjectMemberService = {
     return response.data;
   },
 
+  async listAvailable(projectId) {
+    const response = await api.get(`/members/${projectId}/available`);
+    return response.data;
+  },
+
   async add(projectId, data) {
     const response = await api.post(`/members/${projectId}`, data);
     return response.data;

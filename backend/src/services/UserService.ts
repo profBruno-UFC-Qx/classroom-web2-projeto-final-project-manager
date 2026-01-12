@@ -82,6 +82,17 @@ export class UserService {
     return user;
   }
 
+  async getMe(currentUser?: AuthUser): Promise<User> {
+    assertAuthenticated(currentUser);
+
+    const user = await this.userRepo.findOneBy({ id: currentUser.id });
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    return user;
+  }
+
   async updateUser(
     id: number,
     input: UpdateUserInput,

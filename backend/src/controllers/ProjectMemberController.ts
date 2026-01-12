@@ -15,6 +15,16 @@ export class ProjectMemberController {
     }
   };
 
+  listAvailableUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const projectId = Number(req.params.projectId);
+      const users = await this.memberService.listAvailableUsers(projectId, getAuthUser(req));
+      res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   add = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectId = Number(req.params.projectId);
