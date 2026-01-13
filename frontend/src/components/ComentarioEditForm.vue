@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from "vue";
+import { reactive, watch } from "vue";
 
 const props = defineProps({
   errors: {
@@ -10,14 +10,29 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  comment: {
+    type: Object,
+    required: false
+  },
 });
 
 const emit = defineEmits(["submit"]);
 
 const form = reactive({
-  content: "",
-  taskId: props.taskId,
+  content: props.comment.content,
+  taskId: props.comment.taskId,
 });
+
+watch(
+  () => props.comment,
+  (newComment) => {
+    if (!newComment) return;
+
+    form.content = newComment.content ?? "";
+    form.taskId = newComment.taskId ?? props.taskId;
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -35,7 +50,7 @@ const form = reactive({
     </div>
 
     <button type="submit" class="w-full rounded-xl bg-blue-600 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-      Salvar
+      Atualizar Comentário
     </button>
   </form>
 </template>

@@ -47,13 +47,13 @@ onMounted(async () => {
                     :to="{ name: 'Tarefa-listar' , params: { sprintId: task.sprintId } }"
                     class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
                 >
-                    Voltar
+                    ← Voltar
                 </router-link>
                 <span
                     v-else
                     class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg"
                 >
-                    Voltar
+                    ← Voltar
                 </span>
             </div>
         </div>
