@@ -1,10 +1,26 @@
 <script setup>
+import { UserService } from '@/services/user/user.service';
+import { onMounted } from 'vue';
+
 const props = defineProps({
   comment: {
     type: Object,
     required: true
   }
 });
+
+async function loadAuthor(){
+  try{
+    await UserService.getById(props.comment.authorId);
+  }catch(error){
+    console.error("Erro ao carregar o autor do comentario:", error);
+  }
+}
+
+onMounted(() => {
+  loadAuthor();
+});
+
 </script>
 
 <template>
@@ -27,18 +43,15 @@ const props = defineProps({
     </div>
 
     <div class="mt-3 pt-2 border-t border-yellow-200 text-xs text-gray-500 flex justify-between items-center">
+      <span>Publicado por: {{ props.comment.authorId }}</span>
       <span>{{ props.comment.createdAt?.slice(0, 10) }}</span>
       <div class="flex gap-2">
-      <button
-        class="px-2 py-1 bg-yellow-200 hover:bg-yellow-300 rounded-md text-gray-700 shadow-sm transition"
-      >
-        Editar
-      </button>
-      <button
-          class="px-2 py-1 bg-green-200 hover:bg-green-300 rounded-md text-gray-700 shadow-sm transition"
+        <router-link
+          :to="{ name: 'Comentario-editar', params: { comentarioId: Number(props.comment.id) } }"
+          class="px-2 py-1 bg-yellow-200 hover:bg-yellow-300 rounded-md text-gray-700 shadow-sm transition"
         >
-          Concluido
-        </button>
+          Editar
+        </router-link>
       </div>
     </div>
   </div>

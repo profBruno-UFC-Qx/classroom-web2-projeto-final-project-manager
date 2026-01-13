@@ -101,7 +101,7 @@ onMounted(async () => {
                         <td class="px-4 py-2 border">
                             <div class="flex flex-wrap justify-center gap-3">
                                 <router-link
-                                    :to="{ name: 'Comentario-listar', params: { tarefaId: task.id } }"
+                                    :to="{ name: 'Comentario-listar', params: { tarefaId: Number(task.id) } }"
                                     class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-full text-sm shadow-sm transition"
                                 >
                                     <i class="fa-solid fa-eye"></i>
