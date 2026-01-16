@@ -1,6 +1,8 @@
 <script setup>
+import { onMounted, ref } from 'vue';
 import Container from '../components/Container.vue';
 import ProjetoCard from '../components/ProjetoCard.vue';
+import { ProjectMemberService } from '../services/projectMember/project.member.service';
 
 const props = defineProps({
     projects: {
@@ -8,6 +10,13 @@ const props = defineProps({
         required: true
     }
 });
+
+const linkedProjects = ref([]);
+
+onMounted(async () => {
+  linkedProjects.value = await ProjectMemberService.listMyProjects();
+});
+
 </script>
 
 <template>
@@ -26,7 +35,7 @@ const props = defineProps({
                     <p class="text-4xl font-bold text-black">Projetos Vínculados:</p>
                 </div>
                 <div class="flex flex-wrap gap-5">
-                    <ProjetoCard v-for="project in props.projects" :key="project.id" :project="project" />
+                    <ProjetoCard v-for="project in linkedProjects" :key="project.id" :project="project" />
                 </div>
             </div>
         </div>

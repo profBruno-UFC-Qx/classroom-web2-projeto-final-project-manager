@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const mobileOpen = ref(false)
 const dropdownOpen = ref(false)
@@ -9,6 +12,14 @@ function toggleMobile() {
 }
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
+}
+
+function logout() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+
+  router.push({ name: 'Login' })
+
 }
 </script>
 
@@ -69,6 +80,14 @@ function toggleDropdown() {
 
       <div class="flex items-center gap-3 ml-auto">
         <button
+          @click="logout"
+          class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg
+                 bg-red-500 hover:bg-red-600 transition font-medium text-white"
+        >
+          Logout
+        </button>
+
+        <button
           @click="toggleMobile"
           aria-label="Abrir menu"
           class="md:hidden inline-flex items-center justify-center px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition font-medium"
@@ -108,6 +127,16 @@ function toggleDropdown() {
               >
                 Projetos
               </button>
+
+              <div class="pt-4 border-t mt-1.5 border-white/20">
+                <button
+                  @click="logout"
+                  class="w-full text-left text-lg font-medium
+                    text-red-400 hover:text-red-300"
+                >
+                  Logout
+                </button>
+              </div>
 
               <transition name="slide">
                 <ul

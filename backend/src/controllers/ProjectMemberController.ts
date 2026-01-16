@@ -15,6 +15,16 @@ export class ProjectMemberController {
     }
   };
 
+  listMyProjects = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const currentUser = getAuthUser(req);
+      const projects = await this.memberService.listProjectsByUser(currentUser);
+      return res.json(projects);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   listAvailableUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectId = Number(req.params.projectId);

@@ -93,6 +93,7 @@ export const createRouter = (dataSource: DataSource) => {
   router.put("/sprints/:id", sprintController.update);
   router.delete("/sprints/:id", sprintController.remove);
 
+  router.get("/members/me/projects", memberController.listMyProjects);
   router.get("/members/:projectId", memberController.listByProject);
   router.get("/members/:projectId/available", memberController.listAvailableUsers);
   router.post("/members/:projectId", memberController.add);

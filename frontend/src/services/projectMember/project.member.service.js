@@ -6,6 +6,11 @@ export const ProjectMemberService = {
     return response.data;
   },
 
+  async listMyProjects() {
+    const response = await api.get("/members/me/projects");
+    return response.data;
+  },
+
   async listAvailable(projectId) {
     const response = await api.get(`/members/${projectId}/available`);
     return response.data;

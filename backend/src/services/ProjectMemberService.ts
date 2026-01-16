@@ -33,6 +33,18 @@ export class ProjectMemberService {
     });
   }
 
+  async listProjectsByUser(currentUser?: AuthUser): Promise<Project[]> {
+    assertAuthenticated(currentUser);
+
+    const memberships = await this.memberRepo.find({
+      where: { userId: currentUser.id },
+      relations: { project: true },
+    });
+
+    return memberships.map(membership => membership.project);
+  }
+
+
   async listAvailableUsers(projectId: number, currentUser?: AuthUser): Promise<User[]> {
     assertAuthenticated(currentUser);
     await this.assertCanManageMembers(projectId, currentUser);
