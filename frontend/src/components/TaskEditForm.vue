@@ -109,7 +109,7 @@ const isMember = computed(() => role.value === "member");
             class="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
             :class="errors.title ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'"
           />
-          <p v-if="errors.title" class="mt-1 text-sm text-red-500">{{ errors.title }}</p>
+          <p v-if="errors.title" class="mt-1 text-sm text-red-500">{{ errors.title[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -121,7 +121,7 @@ const isMember = computed(() => role.value === "member");
             class="mt-1 w-full resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
             :class="errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'"
           ></textarea>
-          <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description }}</p>
+          <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -136,7 +136,7 @@ const isMember = computed(() => role.value === "member");
             <option value="em progresso">Em progresso</option>
             <option value="concluído">Concluído</option>
           </select>
-          <p v-if="errors.status" class="mt-1 text-sm text-red-500">{{ errors.status }}</p>
+          <p v-if="errors.status" class="mt-1 text-sm text-red-500">{{  errors.status[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -151,7 +151,7 @@ const isMember = computed(() => role.value === "member");
             <option value="média">Média</option>
             <option value="alta">Alta</option>
           </select>
-          <p v-if="errors.priority" class="mt-1 text-sm text-red-500">{{ errors.priority }}</p>
+          <p v-if="errors.priority" class="mt-1 text-sm text-red-500">{{ errors.priority[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -164,7 +164,7 @@ const isMember = computed(() => role.value === "member");
             class="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
             :class="errors.dueDate ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'"
           />
-          <p v-if="errors.dueDate" class="mt-1 text-sm text-red-500">{{ errors.dueDate }}</p>
+          <p v-if="errors.dueDate" class="mt-1 text-sm text-red-500">{{ errors.dueDate[0]}}</p>
         </div>
 
         <div class="mb-3">
@@ -190,7 +190,7 @@ const isMember = computed(() => role.value === "member");
           </select>
 
           <p v-if="errors.assigneeId" class="mt-1 text-sm text-red-500">
-            {{ errors.assigneeId }}
+            {{ errors.assigneeId[0] }}
           </p>
         </div>
     </div>
@@ -207,7 +207,7 @@ const isMember = computed(() => role.value === "member");
             <option value="em progresso">Em progresso</option>
             <option value="concluído">Concluído</option>
           </select>
-          <p v-if="errors.status" class="mt-1 text-sm text-red-500">{{ errors.status }}</p>
+          <p v-if="errors.status" class="mt-1 text-sm text-red-500">{{ errors.status[0] }}</p>
       </div>
     </div>
 

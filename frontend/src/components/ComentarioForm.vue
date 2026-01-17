@@ -31,7 +31,7 @@ const form = reactive({
         class="mt-1 w-full resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
         :class="errors.content ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'"
       ></textarea>
-      <p v-if="errors.content" class="mt-1 text-sm text-red-500">{{ errors.content }}</p>
+      <p v-if="errors.content" class="mt-1 text-sm text-red-500">{{ errors.content[0] }}</p>
     </div>
 
     <button type="submit" class="w-full rounded-xl bg-blue-600 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">

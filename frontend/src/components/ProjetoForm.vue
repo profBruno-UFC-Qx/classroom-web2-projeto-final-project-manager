@@ -5,10 +5,6 @@ const props = defineProps({
     errors: {
         type: Object,
         default: () => ({})
-    },
-    ownerId: {
-        type: Number,
-        required: true
     }
 });
 
@@ -33,7 +29,7 @@ const form = reactive({
                 : 'border-gray-300 focus:ring-blue-500'" id="name" v-model="form.name" 
             />
 
-            <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -45,17 +41,17 @@ const form = reactive({
             >
             </textarea>
 
-            <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description }}</p>
+            <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description[0] }}</p>
         </div>
 
         <div class="mb-3">
             <label for="isPublic" class="form-label">Visibilidade</label>
-                <select name="isPublic" class="form-select" :class="{ 'is-invalid': errors.status }" id="isPublic" v-model="form.isPublic">
+                <select name="isPublic" class="form-select" :class="{ 'border-red-500 focus:ring-red-500': errors.isPublic }" id="isPublic" v-model="form.isPublic">
                     <option :value="true">Publico</option>
                     <option :value="false">Privado</option>
                 </select>
-            
-            <div class="invalid-feedback" v-if="errors.status">{{ errors.status }}</div>
+
+            <p v-if="errors.isPublic" class="mt-1 text-sm text-red-500"> {{ errors.isPublic[0] }}</p>
         </div>
 
         <button type="submit" class="w-full rounded-xl bg-blue-600 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">

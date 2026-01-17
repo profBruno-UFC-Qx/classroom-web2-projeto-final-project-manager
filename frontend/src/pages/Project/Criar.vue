@@ -17,7 +17,7 @@ const router = useRouter();
 const errors = ref({});
 
 function goBack() {
-    router.push("/")
+    router.push("/Dashboard")
 }
 
 async function handleSubmit(payload) {
@@ -44,6 +44,6 @@ async function handleSubmit(payload) {
                 ← Voltar
             </button>
         </div>
-        <ProjetoForm @submit="handleSubmit" :errors="errors" :ownerId="1" />
+        <ProjetoForm @submit="handleSubmit" :errors="errors" />
     </Container>
 </template>

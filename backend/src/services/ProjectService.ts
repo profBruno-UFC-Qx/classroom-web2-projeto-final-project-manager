@@ -126,6 +126,23 @@ export class ProjectService {
       throw new NotFoundError("Owner user not found");
     }
 
+    const errors: Record<string, string[]> = {};
+
+    if (!input.name || input.name.trim() === "") {
+      errors.name = ["O nome do projeto é obrigatório"];
+    }
+
+    if (input.description !== undefined && input.description.trim() === "") {
+      errors.description = ["A descrição não pode ser vazia"];
+    }
+
+    if (Object.keys(errors).length > 0) {
+      const error: any = new Error("Validation error");
+      error.status = 422;
+      error.errors = errors;
+      throw error;
+    }
+
     const project = this.projectRepo.create({
       name: input.name,
       description: input.description ?? null,

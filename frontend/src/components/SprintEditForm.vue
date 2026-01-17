@@ -49,7 +49,7 @@ watch(
                 : 'border-gray-300 focus:ring-blue-500'" id="name" v-model="form.name" 
             />
 
-            <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -60,7 +60,7 @@ watch(
                 : 'border-gray-300 focus:ring-blue-500'" id="startDate" v-model="form.startDate" 
             />
 
-            <p v-if="errors.startDate" class="mt-1 text-sm text-red-500">{{ errors.startDate }}</p>
+            <p v-if="errors.startDate" class="mt-1 text-sm text-red-500">{{ errors.startDate[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -71,7 +71,7 @@ watch(
                 : 'border-gray-300 focus:ring-blue-500'" id="endDate" v-model="form.endDate" 
             />
 
-            <p v-if="errors.endDate" class="mt-1 text-sm text-red-500">{{ errors.endDate }}</p>
+            <p v-if="errors.endDate" class="mt-1 text-sm text-red-500">{{ errors.endDate[0] }}</p>
         </div>
 
         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition">

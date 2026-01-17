@@ -50,7 +50,7 @@ watch(
             :disabled="disabled"
             />
 
-            <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name[0] }}</p>
         </div>
 
         <div class="mb-3">
@@ -63,17 +63,20 @@ watch(
             >
             </textarea>
 
-            <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description }}</p>
+            <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description[0] }}</p>
         </div>
 
         <div class="mb-3">
             <label for="isPublic" class="form-label">Visibilidade</label>
-                <select name="isPublic" class="form-select" :class="{ 'is-invalid': errors.status }" id="isPublic" v-model="form.isPublic" :disabled="disabled">
+                <select name="isPublic" class="form-select" :class="errors.isPublic 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500'" id="isPublic" v-model="form.isPublic" :disabled="disabled"
+                >
                     <option :value="true">Publico</option>
                     <option :value="false">Privado</option>
                 </select>
-            
-            <div class="invalid-feedback" v-if="errors.status">{{ errors.status }}</div>
+
+            <p v-if="errors.isPublic" class="mt-1 text-sm text-red-500"> {{ errors.isPublic[0] }}</p>
         </div>
 
         <button
