@@ -16,6 +16,14 @@ const props = defineProps({
     projects: {
         type: Array,
         required: true
+    },
+    title: {
+        type: String,
+        default: "Gerenciamento de Projetos"
+    },
+    showCreate: {
+        type: Boolean,
+        default: true
     }
 });
 
@@ -43,10 +51,10 @@ async function handleDelete(id) {
     <Container>
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <p class="text-4xl font-bold text-black">Gerenciamento de Projetos</p>
+                <p class="text-4xl font-bold text-black">{{ title }}</p>
             </div>
             <div>
-                <button v-if="isAuthenticated">
+                <button v-if="showCreate && isAuthenticated">
                     <router-link
                         :to="{ name: 'Projects-criar' }"
                         class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 my-4 rounded-full text-sm shadow-sm transition"
