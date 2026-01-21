@@ -1,0 +1,62 @@
+<script setup>
+import { reactive } from "vue";
+
+const props = defineProps({
+    errors: {
+        type: Object,
+        default: () => ({})
+    }
+});
+
+const emit = defineEmits(["submit"]);
+
+const form = reactive({
+    name: "",
+    description: "",
+    isPublic: false,
+});
+
+</script>
+
+<template>
+    <form @submit.prevent="$emit('submit', form)" class="w-full bg-white p-6 rounded-2xl shadow-md space-y-5">
+        <p v-if="errors.general" class="text-sm text-red-500">{{ errors.general }}</p>
+
+        <div class="mb-3">
+            <label for="name" class="block text-sm font-medium text-gray-700">Título</label>
+            <input type="text" name="name" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+            :class="errors.name
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-blue-500'" id="name" v-model="form.name" 
+            />
+
+            <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name[0] }}</p>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="block text-sm font-medium text-gray-700">Descrição</label>
+            <textarea rows="4" v-model="form.description" class="mt-1 w-full resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+            :class="errors.description
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-blue-500'"
+            >
+            </textarea>
+
+            <p v-if="errors.description" class="mt-1 text-sm text-red-500">{{ errors.description[0] }}</p>
+        </div>
+
+        <div class="mb-3">
+            <label for="isPublic" class="form-label">Visibilidade</label>
+                <select name="isPublic" class="form-select" :class="{ 'border-red-500 focus:ring-red-500': errors.isPublic }" id="isPublic" v-model="form.isPublic">
+                    <option :value="true">Publico</option>
+                    <option :value="false">Privado</option>
+                </select>
+
+            <p v-if="errors.isPublic" class="mt-1 text-sm text-red-500"> {{ errors.isPublic[0] }}</p>
+        </div>
+
+        <button type="submit" class="w-full rounded-xl bg-blue-600 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Salvar
+        </button>
+    </form>
+</template>
