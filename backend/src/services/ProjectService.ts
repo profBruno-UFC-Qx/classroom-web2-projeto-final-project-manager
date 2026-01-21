@@ -1,10 +1,11 @@
-import { In, Repository } from "typeorm";
+import { In, Like, Repository } from "typeorm";
 import { Project } from "../models/Project";
 import { Comment } from "../models/Comment";
 import { Sprint } from "../models/Sprint";
 import { Task } from "../models/Task";
 import { User } from "../models/User";
 import { ProjectMember, ProjectRole } from "../models/ProjectMember";
+import { PaginationOptions } from "../http/pagination";
 import {
   AuthUser,
   BadRequestError,
@@ -28,6 +29,11 @@ export type UpdateProjectInput = {
   ownerId?: number;
 };
 
+export type ProjectListOptions = {
+  pagination?: PaginationOptions;
+  name?: string | null;
+};
+
 export class ProjectService {
   constructor(
     private projectRepo: Repository<Project>,
@@ -35,17 +41,37 @@ export class ProjectService {
     private memberRepo: Repository<ProjectMember>
   ) {}
 
-  async listPublicProjects(): Promise<Project[]> {
-    return this.projectRepo.find({ where: { isPublic: true }, relations: { owner: true } });
+  async listPublicProjects(options?: ProjectListOptions): Promise<Project[]> {
+    const name = options?.name?.trim();
+    const nameFilter = name ? { name: Like(`%${name}%`) } : {};
+
+    return this.projectRepo.find({
+      where: { isPublic: true, ...nameFilter },
+      relations: { owner: true },
+      order: { id: "ASC" },
+      skip: options?.pagination?.skip,
+      take: options?.pagination?.take,
+    });
   }
 
-  async listAccessibleProjects(currentUser?: AuthUser): Promise<Project[]> {
+  async listAccessibleProjects(
+    currentUser?: AuthUser,
+    options?: ProjectListOptions
+  ): Promise<Project[]> {
     if (!currentUser) {
-      return this.listPublicProjects();
+      return this.listPublicProjects(options);
     }
 
     if (isAdmin(currentUser)) {
-      return this.projectRepo.find();
+      const name = options?.name?.trim();
+      const nameFilter = name ? { name: Like(`%${name}%`) } : {};
+      return this.projectRepo.find({
+        where: nameFilter,
+        relations: { owner: true },
+        order: { id: "ASC" },
+        skip: options?.pagination?.skip,
+        take: options?.pagination?.take,
+      });
     }
 
     const memberships = await this.memberRepo.find({
@@ -53,17 +79,26 @@ export class ProjectService {
     });
     const memberProjectIds = memberships.map((member) => member.projectId);
 
-    const where = [{ isPublic: true }, { ownerId: currentUser.id }];
+    const name = options?.name?.trim();
+    const nameFilter = name ? { name: Like(`%${name}%`) } : {};
+    const where = [{ isPublic: true, ...nameFilter }, { ownerId: currentUser.id, ...nameFilter }];
     if (memberProjectIds.length) {
-      where.push({ id: In(memberProjectIds) });
+      where.push({ id: In(memberProjectIds), ...nameFilter });
     }
 
-    return this.projectRepo.find({ where, relations: { owner: true } });
+    return this.projectRepo.find({
+      where,
+      relations: { owner: true },
+      order: { id: "ASC" },
+      skip: options?.pagination?.skip,
+      take: options?.pagination?.take,
+    });
   }
 
   async listMembers(
     projectId: number,
-    currentUser?: AuthUser
+    currentUser?: AuthUser,
+    pagination?: PaginationOptions
   ): Promise<User[]> {
     assertAuthenticated(currentUser);
     await this.assertCanManageProject(projectId, currentUser);
@@ -71,6 +106,9 @@ export class ProjectService {
     const memberships = await this.memberRepo.find({
       where: { projectId },
       relations: { user: true },
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
 
     return memberships.map((membership) => membership.user);

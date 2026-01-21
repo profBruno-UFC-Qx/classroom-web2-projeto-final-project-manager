@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { TaskService } from "../services/TaskService";
 import { getAuthUser } from "../auth/auth";
+import { parsePagination } from "../http/pagination";
 
 export class TaskController {
   constructor(private taskService: TaskService) {}
@@ -13,9 +14,16 @@ export class TaskController {
         return;
       }
 
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
       const tasks = await this.taskService.listBySprint(
         sprintId,
-        getAuthUser(req)
+        getAuthUser(req),
+        pagination
       );
       res.json(tasks);
     } catch (error) {

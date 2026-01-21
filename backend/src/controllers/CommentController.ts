@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { CommentService } from "../services/CommentService";
 import { getAuthUser } from "../auth/auth";
+import { parsePagination } from "../http/pagination";
 
 export class CommentController {
   constructor(private commentService: CommentService) {}
@@ -13,9 +14,16 @@ export class CommentController {
         return;
       }
 
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
       const comments = await this.commentService.listByTask(
         taskId,
-        getAuthUser(req)
+        getAuthUser(req),
+        pagination
       );
       res.json(comments);
     } catch (error) {

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/UserService";
 import { getAuthUser } from "../auth/auth";
+import { parsePagination } from "../http/pagination";
 
 export class UserController {
   constructor(private userService: UserService) {}
@@ -25,7 +26,13 @@ export class UserController {
 
   list = async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const users = await this.userService.listAll(getAuthUser(_req));
+      const { pagination, error } = parsePagination(_req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
+      const users = await this.userService.listAll(getAuthUser(_req), pagination);
       res.json(users);
     } catch (error) {
       next(error);

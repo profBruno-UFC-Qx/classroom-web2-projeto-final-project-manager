@@ -1,6 +1,7 @@
 import { Repository } from "typeorm";
 import bcrypt from "bcryptjs";
 import { User } from "../models/User";
+import { PaginationOptions } from "../http/pagination";
 import {
   AuthUser,
   BadRequestError,
@@ -60,11 +61,18 @@ export class UserService {
     return saved;
   }
 
-  async listAll(currentUser?: AuthUser): Promise<User[]> {
+  async listAll(
+    currentUser?: AuthUser,
+    pagination?: PaginationOptions
+  ): Promise<User[]> {
     assertAuthenticated(currentUser);
     assertAdmin(currentUser);
 
-    return this.userRepo.find();
+    return this.userRepo.find({
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
+    });
   }
 
   async getById(id: number, currentUser?: AuthUser): Promise<User> {

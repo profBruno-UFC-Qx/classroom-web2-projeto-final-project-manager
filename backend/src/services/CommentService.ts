@@ -4,6 +4,7 @@ import { Task } from "../models/Task";
 import { Project } from "../models/Project";
 import { Sprint } from "../models/Sprint";
 import { ProjectMember } from "../models/ProjectMember";
+import { PaginationOptions } from "../http/pagination";
 import {
   AuthUser,
   BadRequestError,
@@ -75,7 +76,8 @@ export class CommentService {
 
   async listByTask(
     taskId: number,
-    currentUser?: AuthUser
+    currentUser?: AuthUser,
+    pagination?: PaginationOptions
   ): Promise<Comment[]> {
     const task = await this.taskRepo.findOneBy({ id: taskId });
     if (!task) {
@@ -83,7 +85,12 @@ export class CommentService {
     }
 
     await this.assertCanViewTask(task, currentUser);
-    return this.commentRepo.find({ where: { taskId } });
+    return this.commentRepo.find({
+      where: { taskId },
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
+    });
   }
 
   async getById(id: number, currentUser?: AuthUser): Promise<Comment> {

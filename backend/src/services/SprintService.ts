@@ -4,6 +4,7 @@ import { Project } from "../models/Project";
 import { Task } from "../models/Task";
 import { Comment } from "../models/Comment";
 import { ProjectMember, ProjectRole } from "../models/ProjectMember";
+import { PaginationOptions } from "../http/pagination";
 import {
   AuthUser,
   BadRequestError,
@@ -94,11 +95,17 @@ export class SprintService {
 
   async listByProject(
     projectId: number,
-    currentUser?: AuthUser
+    currentUser?: AuthUser,
+    pagination?: PaginationOptions
   ): Promise<Sprint[]> {
     await this.assertCanViewProject(projectId, currentUser);
 
-    return this.sprintRepo.find({ where: { projectId } });
+    return this.sprintRepo.find({
+      where: { projectId },
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
+    });
   }
 
   async getById(id: number, currentUser?: AuthUser): Promise<Sprint> {

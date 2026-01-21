@@ -2,6 +2,7 @@ import { In, Not, Repository } from "typeorm";
 import { ProjectMember, ProjectRole } from "../models/ProjectMember";
 import { User } from "../models/User";
 import { Project } from "../models/Project";
+import { PaginationOptions } from "../http/pagination";
 import {
   AuthUser,
   NotFoundError,
@@ -26,26 +27,42 @@ export class ProjectMemberService {
     private userRepo: Repository<User>
   ) {}
 
-  async listByProject(projectId: number): Promise<ProjectMember[]> {
+  async listByProject(
+    projectId: number,
+    pagination?: PaginationOptions
+  ): Promise<ProjectMember[]> {
     return this.memberRepo.find({
       where: { projectId },
       relations: { user: true },
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
   }
 
-  async listProjectsByUser(currentUser?: AuthUser): Promise<Project[]> {
+  async listProjectsByUser(
+    currentUser?: AuthUser,
+    pagination?: PaginationOptions
+  ): Promise<Project[]> {
     assertAuthenticated(currentUser);
 
     const memberships = await this.memberRepo.find({
       where: { userId: currentUser.id },
       relations: { project: true },
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
 
     return memberships.map(membership => membership.project);
   }
 
 
-  async listAvailableUsers(projectId: number, currentUser?: AuthUser): Promise<User[]> {
+  async listAvailableUsers(
+    projectId: number,
+    currentUser?: AuthUser,
+    pagination?: PaginationOptions
+  ): Promise<User[]> {
     assertAuthenticated(currentUser);
     await this.assertCanManageMembers(projectId, currentUser);
 
@@ -56,11 +73,18 @@ export class ProjectMemberService {
     const memberIds = memberships.map((membership) => membership.userId);
 
     if (!memberIds.length) {
-      return this.userRepo.find();
+      return this.userRepo.find({
+        order: { id: "ASC" },
+        skip: pagination?.skip,
+        take: pagination?.take,
+      });
     }
 
     return this.userRepo.find({
       where: { id: Not(In(memberIds)) },
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
     });
   }
 

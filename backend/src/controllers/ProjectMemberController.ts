@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ProjectMemberService } from "../services/ProjectMemberService";
 import { getAuthUser } from "../auth/auth";
+import { parsePagination } from "../http/pagination";
 
 export class ProjectMemberController {
   constructor(private memberService: ProjectMemberService) {}
@@ -8,7 +9,13 @@ export class ProjectMemberController {
   listByProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectId = Number(req.params.projectId);
-      const members = await this.memberService.listByProject(projectId);
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
+      const members = await this.memberService.listByProject(projectId, pagination);
       res.json(members);
     } catch (error) {
       next(error);
@@ -18,7 +25,16 @@ export class ProjectMemberController {
   listMyProjects = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const currentUser = getAuthUser(req);
-      const projects = await this.memberService.listProjectsByUser(currentUser);
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
+      const projects = await this.memberService.listProjectsByUser(
+        currentUser,
+        pagination
+      );
       return res.json(projects);
     } catch (error) {
       next(error);
@@ -28,7 +44,17 @@ export class ProjectMemberController {
   listAvailableUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const projectId = Number(req.params.projectId);
-      const users = await this.memberService.listAvailableUsers(projectId, getAuthUser(req));
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
+      const users = await this.memberService.listAvailableUsers(
+        projectId,
+        getAuthUser(req),
+        pagination
+      );
       res.json(users);
     } catch (error) {
       next(error);

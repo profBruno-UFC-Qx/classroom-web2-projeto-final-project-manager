@@ -4,6 +4,7 @@ import { Project } from "../models/Project";
 import { Sprint } from "../models/Sprint";
 import { User } from "../models/User";
 import { ProjectMember, ProjectRole } from "../models/ProjectMember";
+import { PaginationOptions } from "../http/pagination";
 import {
   AuthUser,
   BadRequestError,
@@ -101,7 +102,8 @@ export class TaskService {
 
   async listBySprint(
     sprintId: number,
-    currentUser?: AuthUser
+    currentUser?: AuthUser,
+    pagination?: PaginationOptions
   ): Promise<Task[]> {
     const { project } = await this.getProjectForSprint(sprintId);
     const baseWhere = { sprintId };
@@ -111,6 +113,9 @@ export class TaskService {
       relations: {
         assignee: true,
       },
+      order: { id: "ASC" },
+      skip: pagination?.skip,
+      take: pagination?.take,
     };
 
     if (project.isPublic) {
@@ -140,6 +145,9 @@ export class TaskService {
         relations: {
           assignee: true,
         },
+        order: { id: "ASC" },
+        skip: pagination?.skip,
+        take: pagination?.take,
       });
     }
 

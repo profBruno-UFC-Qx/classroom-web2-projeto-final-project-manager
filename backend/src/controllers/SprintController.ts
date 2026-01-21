@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { SprintService } from "../services/SprintService";
 import { getAuthUser } from "../auth/auth";
+import { parsePagination } from "../http/pagination";
 
 export class SprintController {
   constructor(private sprintService: SprintService) {}
@@ -13,9 +14,16 @@ export class SprintController {
         return;
       }
 
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
       const sprints = await this.sprintService.listByProject(
         projectId,
-        getAuthUser(req)
+        getAuthUser(req),
+        pagination
       );
       res.json(sprints);
     } catch (error) {

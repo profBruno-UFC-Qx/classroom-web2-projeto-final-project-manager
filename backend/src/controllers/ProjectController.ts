@@ -1,14 +1,24 @@
 import { Request, Response, NextFunction } from "express";
 import { ProjectService } from "../services/ProjectService";
 import { getAuthUser } from "../auth/auth";
+import { parsePagination } from "../http/pagination";
 
 export class ProjectController {
   constructor(private projectService: ProjectService) {}
 
   list = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
+      const name =
+        typeof req.query.name === "string" ? req.query.name : undefined;
       const projects = await this.projectService.listAccessibleProjects(
-        getAuthUser(req)
+        getAuthUser(req),
+        { pagination, name }
       );
       res.json(projects);
     } catch (error) {
@@ -29,9 +39,16 @@ export class ProjectController {
   listMembers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = Number(req.params.id);
+      const { pagination, error } = parsePagination(req.query);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
       const members = await this.projectService.listMembers(
         id,
-        getAuthUser(req)
+        getAuthUser(req),
+        pagination
       );
       res.json(members);
     } catch (error) {
